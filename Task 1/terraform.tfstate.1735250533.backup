@@ -1,7 +1,7 @@
 {
   "version": 4,
   "terraform_version": "1.10.3",
-  "serial": 84,
+  "serial": 82,
   "lineage": "b35e8886-c49e-64a8-8dae-c9d276284f38",
   "outputs": {
     "instance_public_ip": {
@@ -291,14 +291,24 @@
             "timeouts": null,
             "user_data": "9ff39ac8ee07b696776eebe938b9e2725deb9538",
             "user_data_base64": null,
-            "user_data_replace_on_change": null,
+            "user_data_replace_on_change": false,
             "volume_tags": null,
             "vpc_security_group_ids": [
               "sg-09c6cb9e48072e546"
             ]
           },
           "sensitive_attributes": [],
-          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMCwicmVhZCI6OTAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9"
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMCwicmVhZCI6OTAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "aws_db_instance.postgresql",
+            "aws_db_subnet_group.rds_subnet_group",
+            "aws_key_pair.demo_key_pair",
+            "aws_security_group.demo_sg",
+            "aws_subnet.DemoPublicSubnetA",
+            "aws_subnet.DemoPublicSubnetB",
+            "aws_vpc.demovpc",
+            "tls_private_key.demo_private_key"
+          ]
         }
       ]
     },
@@ -736,13 +746,13 @@
             [
               {
                 "type": "get_attr",
-                "value": "private_key_openssh"
+                "value": "private_key_pem_pkcs8"
               }
             ],
             [
               {
                 "type": "get_attr",
-                "value": "private_key_pem_pkcs8"
+                "value": "private_key_openssh"
               }
             ],
             [

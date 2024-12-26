@@ -74,8 +74,7 @@ resource "aws_security_group" "demo_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.3.10.99/32"]
-    #cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow PostreSQL
@@ -83,15 +82,6 @@ resource "aws_security_group" "demo_sg" {
     description = "Allow PostreSQL"
     from_port   = 5432
     to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow HTTP for Apache
-  ingress {
-    description = "Allow HTTP"
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
