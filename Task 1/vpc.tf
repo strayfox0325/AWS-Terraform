@@ -26,6 +26,26 @@ resource "aws_subnet" "DemoPublicSubnetB"{
     }
 }
 
+# Create private subnet A
+resource "aws_subnet" "DemoPrivateSubnetA" {
+  vpc_id            = aws_vpc.demovpc.id
+  availability_zone = "eu-central-1a"
+  cidr_block        = "10.0.3.0/24"
+  tags = {
+    Name = "DemoPrivateSubnetA"
+  }
+}
+
+# Create private subnet B
+resource "aws_subnet" "DemoPrivateSubnetB" {
+  vpc_id            = aws_vpc.demovpc.id
+  availability_zone = "eu-central-1b"
+  cidr_block        = "10.0.4.0/24"
+  tags = {
+    Name = "DemoPrivateSubnetB"
+  }
+}
+
  #  Create IGW
 resource "aws_internet_gateway" "DemoIGW"{
     vpc_id = aws_vpc.demovpc.id
@@ -34,7 +54,22 @@ resource "aws_internet_gateway" "DemoIGW"{
     }
 }
 
- #  Route Tables for public subnet
+# Create Elastic IP for NAT GW
+resource "aws_eip" "DemoNAT" {
+  domain = "vpc"
+}
+
+# NAT Gateway
+resource "aws_nat_gateway" "DemoNGW" {
+  allocation_id = aws_eip.DemoNAT.id
+  subnet_id     = aws_subnet.DemoPublicSubnetA.id
+
+  tags = {
+    Name = "Demo NAT Gateway"
+  }
+}
+
+ # Create Route Tables for public subnet
 resource "aws_route_table" "DemoPublicRT"{
     vpc_id = aws_vpc.demovpc.id
     route {
@@ -45,43 +80,69 @@ resource "aws_route_table" "DemoPublicRT"{
         Name = "DemoPublicRT"
     }
 }
+
+# Create Route Table for private subnets
+resource "aws_route_table" "DemoPrivateRT" {
+  vpc_id = aws_vpc.demovpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.DemoNGW.id
+  }
+
+  tags = {
+    Name = "DemoPrivateRT"
+  }
+}
  
- #  Route table association public subnet A
+ #  Route table association for public subnet A
 resource "aws_route_table_association" "DemoPublicRTAssociationA"{
     subnet_id = aws_subnet.DemoPublicSubnetA.id
     route_table_id = aws_route_table.DemoPublicRT.id
 }
 
-#  Route table association public subnet B
+#  Route table association for public subnet B
 resource "aws_route_table_association" "DemoPublicRTAssociationB"{
     subnet_id = aws_subnet.DemoPublicSubnetB.id
     route_table_id = aws_route_table.DemoPublicRT.id
 }
 
-#  Security group for Demo VPC
+# Route Table association for private subnet A
+resource "aws_route_table_association" "DemoPrivateRTAssociationA" {
+  subnet_id      = aws_subnet.DemoPrivateSubnetA.id
+  route_table_id = aws_route_table.DemoPrivateRT.id
+}
+
+# Route Table association for private subnet B
+resource "aws_route_table_association" "DemoPrivateRTAssociationB" {
+  subnet_id      = aws_subnet.DemoPrivateSubnetB.id
+  route_table_id = aws_route_table.DemoPrivateRT.id
+}
+
+#  Security group for EC2 instance
 resource "aws_security_group" "demo_sg" {
   name        = "demo-security-group"
-  description = "Demo security group"
+  description = "Allow inbound and outbound traffic for EC2 instance"
   vpc_id = aws_vpc.demovpc.id
   
   tags = {
-    Name = "Demo SG"
-   }
+    Name = "demo-security-group"
+  }
 
-  # Allow SSh
+  # Allow inbound SSH
   ingress {
-    description = "Allow SSH"
+    description = "Allow inbound SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow PostreSQL
+  # Allow inbound HTTP
   ingress {
-    description = "Allow PostreSQL"
-    from_port   = 5432
-    to_port     = 5432
+    description = "Allow inbound HTTP"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -94,20 +155,5 @@ resource "aws_security_group" "demo_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-#   Create RDS subnet group (For Multi-AZ)
-resource "aws_db_subnet_group" "rds_subnet_group" {
-  name       = "rds-subnet-group"
-  subnet_ids = [
-    aws_subnet.DemoPublicSubnetA.id,
-    aws_subnet.DemoPublicSubnetB.id
-  ]
-
-  tags = {
-    Name = "RDS subnet group"
-  }
-}
-
-
 
 
